@@ -2251,7 +2251,7 @@ function renderChatMessages(){
   const threadKey = getCurrentThreadKey();
   const threadMsgs = chatThreads?.[threadKey] || chatMessages;
   const me = state.currentUser;
-  el.innerHTML = threadMsgs.map(m => `
+  el.innerHTML = Object.values(threadMsgs || {}).map(...)(m => `
     <div class="chat-msg ${(m.from === 'owner' || (me?.isOwner && m.from !== 'owner')) ? 'from-owner' : 'from-me'}">
       <div class="chat-msg-name">${m.name}</div>
       ${esc(m.text)}
