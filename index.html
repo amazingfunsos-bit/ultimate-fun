@@ -2146,7 +2146,7 @@ function tickLockdown(){
       document.body.style.overflow = '';
     }
   }
-
+ 
   // Dashboard status badge
   const badge   = document.getElementById('dash-lock-badge');
   const timeTag = document.getElementById('dash-lock-time');
@@ -2248,14 +2248,33 @@ function switchChatTab(tab){
 function renderChatMessages(){
   const el = document.getElementById('chat-messages');
   if (!el) return;
+
   const threadKey = getCurrentThreadKey();
   const threadMsgs = chatThreads?.[threadKey] || chatMessages;
   const me = state.currentUser;
-  el.innerHTML = Object.values(threadMsgs || {}).map(...)(m => `
-    <div class="chat-msg ${(m.from === 'owner' || (me?.isOwner && m.from !== 'owner')) ? 'from-owner' : 'from-me'}">
-      <div class="chat-msg-name">${m.name}</div>
-      ${esc(m.text)}
-    </div>`).join('');
+
+  el.innerHTML = "";
+
+  const messages = Object.values(threadMsgs || {});
+
+  messages.forEach(m => {
+    const div = document.createElement("div");
+
+    div.className =
+      "chat-msg " +
+      ((m.from === 'owner' || (me?.isOwner && m.from !== 'owner'))
+        ? 'from-owner'
+        : 'from-me');
+
+    div.innerHTML =
+      '<div class="chat-msg-name">' +
+      m.name +
+      '</div>' +
+      esc(m.text);
+
+    el.appendChild(div);
+  });
+
   el.scrollTop = el.scrollHeight;
 }
 
