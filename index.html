@@ -2634,6 +2634,134 @@ loadState().then(() => {
   startFeedbackSync();
   startAnnouncementSync();
   startBroadcastSync();
+ let currentThread = null;
+
+function sendChatMsg() {
+  const input = document.getElementById("chat-input-box");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (!user) return;
+
+  const db = firebase.firestore();
+
+  // OWNER MODE
+  if (user.role === "owner") {
+    if (!currentThread) return;
+
+    db.collection("chats")
+      .doc(currentThread)
+      .collection("messages")
+      .add({
+        from: "owner",
+        text: text,
+        time: Date.now()
+      });
+
+  } else {
+    // USER MODE
+    db.collection("chats")
+      .doc(user.email)
+      .collection("messages")
+      .add({
+        from: "user",
+        text: text,
+        time: Date.now()
+      });
+  }
+
+  input.value = "";
+}
+ function startChat() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const db = firebase.firestore();
+  const chatBox = document.getElementById("chat-messages");
+
+  if (!user) return;
+
+  // OWNER VIEW
+  if (user.role === "owner") {
+    document.getElementById("owner-thread-row").style.display = "flex";
+
+    db.collection("chats").onSnapshot(snapshot => {
+      const select = document.getElementById("owner-thread-select");
+      select.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.textContent = doc.id;
+        select.appendChild(option);
+      });
+
+      if (!currentThread && select.value) {
+        currentThread = select.value;
+        loadOwnerChat();
+      }
+    });
+
+  } else {
+    loadUserChat();
+  }
+}
+ function loadUserChat() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const db = firebase.firestore();
+  const chatBox = document.getElementById("chat-messages");
+
+  db.collection("chats")
+    .doc(user.email)
+    .collection("messages")
+    .orderBy("time")
+    .onSnapshot(snapshot => {
+      chatBox.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+
+        chatBox.innerHTML += `
+          <div class="chat-msg ${msg.from === "user" ? "from-me" : "from-owner"}">
+            <div class="chat-msg-name">
+              ${msg.from === "user" ? user.username : "👑 Owner"}
+            </div>
+            ${msg.text}
+          </div>
+        `;
+      });
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+function loadOwnerChat() {
+  const db = firebase.firestore();
+  const chatBox = document.getElementById("chat-messages");
+
+  db.collection("chats")
+    .doc(currentThread)
+    .collection("messages")
+    .orderBy("time")
+    .onSnapshot(snapshot => {
+      chatBox.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+
+        chatBox.innerHTML += `
+          <div class="chat-msg ${msg.from === "user" ? "from-me" : "from-owner"}">
+            <div class="chat-msg-name">
+              ${msg.from === "user" ? currentThread : "👑 Owner"}
+            </div>
+            ${msg.text}
+          </div>
+        `;
+      });
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+ 
 });
 </script>
 </body>
