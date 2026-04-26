@@ -1165,7 +1165,6 @@ async function loadState(){
         siteTheme: 'default',
         users: [
           {username:'HeadAdmin', password:'Binyomin@2015', isOwner:true, isHeadAdmin:true, email:'Binyominpelman613@gmail.com'},
-          {username:'owner', password:'fun123', isOwner:true, email:'owner@fun.com'}
         ]
       });
     }
@@ -2761,7 +2760,28 @@ function loadOwnerChat() {
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 }
- 
+ function sendChatMsg() {
+  const input = document.getElementById("chat-input-box");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const threadKey = getCurrentThreadKey();
+
+  // make sure object exists
+  if (!chatThreads[threadKey]) chatThreads[threadKey] = {};
+
+  const id = Date.now();
+
+  chatThreads[threadKey][id] = {
+    from: state.currentUser?.isOwner ? "owner" : "user",
+    name: state.currentUser?.username || "You",
+    text: text
+  };
+
+  input.value = "";
+
+  renderChatMessages();
+}
 });
 </script>
 </body>
