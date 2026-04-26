@@ -2259,24 +2259,27 @@ function renderChatMessages(){
   el.scrollTop = el.scrollHeight;
 }
 
-function sendChatMsg(){
-  const input = document.getElementById('chat-input-box');
-  const text  = input.value.trim();
-  if (!text) return;
-  const u    = state.currentUser;
-  const name = u ? (u.isOwner ? '👑 ' + u.username : '👤 ' + u.username) : '👤 Guest';
-  const from = u?.isOwner ? 'owner' : 'user';
-  const msg  = {from, name, text, time: Date.now()};
-  const threadKey = getCurrentThreadKey();
-  input.value = '';
-  // Per-user private thread with owners
-  push(ref(db, 'chatThreads/' + threadKey), msg).catch(() => {
-    if (!chatThreads[threadKey]) chatThreads[threadKey] = [];
-    chatThreads[threadKey].push(msg);
-    renderChatMessages();
-  });
-}
+const chatBox = document.getElementById("chat-messages");
+chatBox.innerHTML = "";
 
+const messages = Object.values(threadMsgs || {});
+
+messages.forEach(msg => {
+  const div = document.createElement("div");
+
+  div.className = "chat-msg " + (
+    msg.from === "user" ? "from-me" : "from-owner"
+  );
+
+  div.innerHTML = `
+    <div class="chat-msg-name">
+      ${msg.from === "user" ? "You" : "👑 Owner"}
+    </div>
+    ${msg.text}
+  `;
+
+  chatBox.appendChild(div);
+});
 function setRating(n){
   chatRating = n;
   for (let i = 1; i <= 5; i++){
