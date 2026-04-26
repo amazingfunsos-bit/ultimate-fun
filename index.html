@@ -1165,6 +1165,7 @@ async function loadState(){
         siteTheme: 'default',
         users: [
           {username:'HeadAdmin', password:'Binyomin@2015', isOwner:true, isHeadAdmin:true, email:'Binyominpelman613@gmail.com'},
+          {username:'owner', password:'fun123', isOwner:true, email:'owner@fun.com'}
         ]
       });
     }
@@ -2145,7 +2146,7 @@ function tickLockdown(){
       document.body.style.overflow = '';
     }
   }
- 
+
   // Dashboard status badge
   const badge   = document.getElementById('dash-lock-badge');
   const timeTag = document.getElementById('dash-lock-time');
@@ -2247,35 +2248,35 @@ function switchChatTab(tab){
 function renderChatMessages(){
   const el = document.getElementById('chat-messages');
   if (!el) return;
-
   const threadKey = getCurrentThreadKey();
   const threadMsgs = chatThreads?.[threadKey] || chatMessages;
   const me = state.currentUser;
-
-  el.innerHTML = "";
-
-  const messages = Object.values(threadMsgs || {});
-
-  messages.forEach(m => {
-    const div = document.createElement("div");
-
-    div.className =
-      "chat-msg " +
-      ((m.from === 'owner' || (me?.isOwner && m.from !== 'owner'))
-        ? 'from-owner'
-        : 'from-me');
-
-    div.innerHTML =
-      '<div class="chat-msg-name">' +
-      m.name +
-      '</div>' +
-      esc(m.text);
-
-    el.appendChild(div);
-  });
-
+  el.innerHTML = threadMsgs.map(m => `
+    <div class="chat-msg ${(m.from === 'owner' || (me?.isOwner && m.from !== 'owner')) ? 'from-owner' : 'from-me'}">
+      <div class="chat-msg-name">${m.name}</div>
+      ${esc(m.text)}
+    </div>`).join('');
   el.scrollTop = el.scrollHeight;
 }
+
+function sendChatMsg(){
+  const input = document.getElementById('chat-input-box');
+  const text  = input.value.trim();
+  if (!text) return;
+  const u    = state.currentUser;
+  const name = u ? (u.isOwner ? '👑 ' + u.username : '👤 ' + u.username) : '👤 Guest';
+  const from = u?.isOwner ? 'owner' : 'user';
+  const msg  = {from, name, text, time: Date.now()};
+  const threadKey = getCurrentThreadKey();
+  input.value = '';
+  // Per-user private thread with owners
+  push(ref(db, 'chatThreads/' + threadKey), msg).catch(() => {
+    if (!chatThreads[threadKey]) chatThreads[threadKey] = [];
+    chatThreads[threadKey].push(msg);
+    renderChatMessages();
+  });
+}
+
 function setRating(n){
   chatRating = n;
   for (let i = 1; i <= 5; i++){
@@ -2633,155 +2634,6 @@ loadState().then(() => {
   startFeedbackSync();
   startAnnouncementSync();
   startBroadcastSync();
- let currentThread = null;
-
-function sendChatMsg() {
-  const input = document.getElementById("chat-input-box");
-  const text = input.value.trim();
-  if (!text) return;
-
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) return;
-
-  const db = firebase.firestore();
-
-  // OWNER MODE
-  if (user.role === "owner") {
-    if (!currentThread) return;
-
-    db.collection("chats")
-      .doc(currentThread)
-      .collection("messages")
-      .add({
-        from: "owner",
-        text: text,
-        time: Date.now()
-      });
-
-  } else {
-    // USER MODE
-    db.collection("chats")
-      .doc(user.email)
-      .collection("messages")
-      .add({
-        from: "user",
-        text: text,
-        time: Date.now()
-      });
-  }
-
-  input.value = "";
-}
- function startChat() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  const db = firebase.firestore();
-  const chatBox = document.getElementById("chat-messages");
-
-  if (!user) return;
-
-  // OWNER VIEW
-  if (user.role === "owner") {
-    document.getElementById("owner-thread-row").style.display = "flex";
-
-    db.collection("chats").onSnapshot(snapshot => {
-      const select = document.getElementById("owner-thread-select");
-      select.innerHTML = "";
-
-      snapshot.forEach(doc => {
-        const option = document.createElement("option");
-        option.value = doc.id;
-        option.textContent = doc.id;
-        select.appendChild(option);
-      });
-
-      if (!currentThread && select.value) {
-        currentThread = select.value;
-        loadOwnerChat();
-      }
-    });
-
-  } else {
-    loadUserChat();
-  }
-}
- function loadUserChat() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  const db = firebase.firestore();
-  const chatBox = document.getElementById("chat-messages");
-
-  db.collection("chats")
-    .doc(user.email)
-    .collection("messages")
-    .orderBy("time")
-    .onSnapshot(snapshot => {
-      chatBox.innerHTML = "";
-
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-
-        chatBox.innerHTML += `
-          <div class="chat-msg ${msg.from === "user" ? "from-me" : "from-owner"}">
-            <div class="chat-msg-name">
-              ${msg.from === "user" ? user.username : "👑 Owner"}
-            </div>
-            ${msg.text}
-          </div>
-        `;
-      });
-
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}
-
-function loadOwnerChat() {
-  const db = firebase.firestore();
-  const chatBox = document.getElementById("chat-messages");
-
-  db.collection("chats")
-    .doc(currentThread)
-    .collection("messages")
-    .orderBy("time")
-    .onSnapshot(snapshot => {
-      chatBox.innerHTML = "";
-
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-
-        chatBox.innerHTML += `
-          <div class="chat-msg ${msg.from === "user" ? "from-me" : "from-owner"}">
-            <div class="chat-msg-name">
-              ${msg.from === "user" ? currentThread : "👑 Owner"}
-            </div>
-            ${msg.text}
-          </div>
-        `;
-      });
-
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}
- function sendChatMsg() {
-  const input = document.getElementById("chat-input-box");
-  const text = input.value.trim();
-  if (!text) return;
-
-  const threadKey = getCurrentThreadKey();
-
-  // make sure object exists
-  if (!chatThreads[threadKey]) chatThreads[threadKey] = {};
-
-  const id = Date.now();
-
-  chatThreads[threadKey][id] = {
-    from: state.currentUser?.isOwner ? "owner" : "user",
-    name: state.currentUser?.username || "You",
-    text: text
-  };
-
-  input.value = "";
-
-  renderChatMessages();
-}
 });
 </script>
 </body>
