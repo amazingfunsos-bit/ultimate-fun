@@ -14,6 +14,7 @@
   }
   body{font-family:'Nunito',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden}
   .page{display:none;min-height:calc(100vh - 58px);animation:fadeIn .35s ease}
+  body.banner-visible .page{min-height:calc(100vh - 92px)}
   .page.active{display:block}
   @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
   @keyframes bounceIn{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.1)}80%{transform:scale(.95)}100%{transform:scale(1);opacity:1}}
@@ -414,7 +415,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- CHAT FAB -->
-<button class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Chat with owners / Leave feedback" style="display:none">
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Chat with owner / Leave feedback">
   💬
   <span class="chat-badge" id="chat-badge" style="display:none"></span>
 </button>
@@ -756,10 +757,18 @@
           <select id="media-type"><option value="meme">🖼️ Meme</option><option value="gif">🎞️ GIF</option></select>
         </div>
         <div class="form-group" style="margin-top:10px">
-          <label>🎨 Pixel Art (Piskel)</label>
-          <a href="https://www.piskelapp.com/p/create/sprite" target="_blank" rel="noopener" style="display:inline-block;font-size:12px;color:var(--cyan);margin-bottom:8px">Open Piskel Editor in a new tab</a>
-          <iframe src="https://www.piskelapp.com/p/create/sprite" title="Piskel Pixel Art Editor" style="width:100%;height:240px;border:1px solid rgba(0,180,216,.25);border-radius:10px;background:rgba(0,0,0,.2)"></iframe>
-          <div style="font-size:11px;color:rgba(240,244,255,.4);margin-top:6px">Create in Piskel, export the file, then upload it above.</div>
+          <label>🎨 Create Pixel Art with Piskel</label>
+          <div style="background:rgba(247,37,133,.06);border:2px solid rgba(247,37,133,.25);border-radius:12px;padding:16px;margin-top:6px">
+            <p style="font-size:13px;color:rgba(240,244,255,.75);line-height:1.7;margin-bottom:12px">
+              Piskel is an online pixel art editor. Click the button below to open it in a new window, create your pixel art, then export it as a PNG and upload it using the file picker above.
+            </p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button type="button" class="small-btn pink" onclick="window.open('https://www.piskelapp.com/p/create/sprite','piskel','width=1100,height=750,resizable=yes,scrollbars=yes')" style="margin-top:0;font-size:13px;padding:10px 20px">
+                🎨 Open Piskel Editor
+              </button>
+              <span style="font-size:12px;color:rgba(240,244,255,.4)">→ Create art → File → Export (PNG) → upload the file above</span>
+            </div>
+          </div>
         </div>
         <button class="small-btn pink" onclick="addMedia()">+ Add Media</button>
       </div>
@@ -1186,8 +1195,6 @@ async function loadState(){
 function goHome(){ showPage('home'); }
 
 function showPage(id){
-  const blockingClass = getCurrentBlock(new Date());
-  if (blockingClass && !state.currentUser?.isOwner) id = 'home';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   window.scrollTo(0, 0);
@@ -1215,9 +1222,9 @@ function updateNav(){
   // Save File button only visible to owners
   const sfb = document.getElementById('save-file-btn');
   if (sfb) sfb.style.display = (u && u.isOwner) ? 'block' : 'none';
-  // Chat FAB visible when logged in
+  // Chat FAB always visible (guests can message owner too)
   const chatFab = document.getElementById('chat-fab');
-  if (chatFab) chatFab.style.display = u ? 'flex' : 'none';
+  if (chatFab) chatFab.style.display = 'flex';
   // Update profile button initials/avatar
   updateProfileBtn();
   updateHomePage();
@@ -1290,6 +1297,8 @@ function doSignin(){
   state.currentUser = found;
   saveState();
   updateNav();
+  chatThreads = {};
+  startChatSync();
   al.innerHTML = okBox('Welcome back, ' + found.username + '!');
   setTimeout(() => {
     ['si-user','si-pass'].forEach(i => document.getElementById(i).value = '');
@@ -2172,6 +2181,7 @@ function tickLockdown(){
   if (banner) {
     if (block) {
       banner.classList.add('visible');
+      document.body.classList.add('banner-visible');
       if (cbLabel) cbLabel.textContent = '📚 ' + block.label + ' — CLASS TIME';
       if (cbEnd) {
         let endStr = fmt12(block.end);
@@ -2184,12 +2194,10 @@ function tickLockdown(){
       }
     } else {
       banner.classList.remove('visible');
+      document.body.classList.remove('banner-visible');
     }
   }
-  const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
-  if (block && !isOwner && activePage && activePage !== 'home'){
-    showPage('home');
-  }
+  // NOTE: The lockdown overlay handles blocking — no page redirect needed
 }
 
 setInterval(tickLockdown, 1000);
@@ -2249,13 +2257,19 @@ function renderChatMessages(){
   const el = document.getElementById('chat-messages');
   if (!el) return;
   const threadKey = getCurrentThreadKey();
-  const threadMsgs = chatThreads?.[threadKey] || chatMessages;
+  let rawMsgs = chatThreads?.[threadKey];
+  // Firebase push() stores as object with auto-keys — convert to array
+  const threadMsgs = rawMsgs
+    ? (Array.isArray(rawMsgs) ? rawMsgs : Object.values(rawMsgs)).sort((a,b)=>(a.time||0)-(b.time||0))
+    : [{from:'owner', name:'👑 Owner', text:'Hey! Feel free to ask us anything or leave feedback 😊', time:0}];
   const me = state.currentUser;
-  el.innerHTML = threadMsgs.map(m => `
-    <div class="chat-msg ${(m.from === 'owner' || (me?.isOwner && m.from !== 'owner')) ? 'from-owner' : 'from-me'}">
-      <div class="chat-msg-name">${m.name}</div>
+  el.innerHTML = threadMsgs.map(m => {
+    const isFromMe = me?.isOwner ? m.from === 'owner' : m.from !== 'owner';
+    return `<div class="chat-msg ${isFromMe ? 'from-me' : 'from-owner'}">
+      <div class="chat-msg-name">${esc(m.name)}</div>
       ${esc(m.text)}
-    </div>`).join('');
+    </div>`;
+  }).join('');
   el.scrollTop = el.scrollHeight;
 }
 
@@ -2579,25 +2593,35 @@ function exportMediaFiles(){
   toast(`Exported ${uploads.length} uploaded media file(s).`,'info');
 }
 function startChatSync(){
-  onValue(ref(db, 'chatThreads'), snap => {
-    const d = snap.val();
-    chatThreads = d || {};
-    const me = state.currentUser;
-    if (me && !me.isOwner){
-      const key = chatThreadKeyForUser(me.username);
-      if (!chatThreads[key]){
-        chatThreads[key] = [{from:'owner', name:'👑 Owner', text:'Hey! This is your private thread with the owner 😊', time:0}];
+  const me = state.currentUser;
+  if (me?.isOwner){
+    // Owners see ALL threads so they can reply to everyone
+    onValue(ref(db, 'chatThreads'), snap => {
+      const d = snap.val();
+      chatThreads = d || {};
+      const modal = document.getElementById('chat-modal');
+      if (modal && modal.classList.contains('open')){
+        renderOwnerThreadPicker();
+        renderChatMessages();
       }
-    }
-    if (!Object.keys(chatThreads).length){
-      chatThreads = {guest:[{from:'owner', name:'👑 Owner', text:'Hey! Feel free to ask us anything or leave feedback 😊', time:0}]};
-    }
-    const modal = document.getElementById('chat-modal');
-    if (modal && modal.classList.contains('open')){
-      renderOwnerThreadPicker();
-      renderChatMessages();
-    }
-  });
+    });
+  } else {
+    // Regular users / guests only subscribe to their OWN thread
+    const key = me ? chatThreadKeyForUser(me.username) : 'guest';
+    onValue(ref(db, 'chatThreads/' + key), snap => {
+      const msgs = snap.val();
+      // Convert Firebase object → array if needed
+      const arr = msgs ? (Array.isArray(msgs) ? msgs : Object.values(msgs)) : [];
+      if (!arr.length){
+        arr.push({from:'owner', name:'👑 Owner', text:'Hey! This is your private chat with the owner 😊', time:0});
+      }
+      chatThreads[key] = arr;
+      const modal = document.getElementById('chat-modal');
+      if (modal && modal.classList.contains('open')){
+        renderChatMessages();
+      }
+    });
+  }
 }
 
 // ── EXPOSE ALL FUNCTIONS TO GLOBAL SCOPE (required for onclick attrs in ES modules) ──
