@@ -261,6 +261,46 @@
   .owner-thread-row{display:none;padding:8px 12px;border-bottom:1px solid rgba(0,180,216,.12);background:rgba(0,0,0,.15);gap:8px;align-items:center}
   .owner-thread-row select{flex:1;background:rgba(255,255,255,.07);border:2px solid rgba(0,180,216,.2);border-radius:8px;padding:6px 8px;color:var(--white);font-family:'Nunito',sans-serif;font-size:12px;outline:none}
 
+  /* ── INBOX TAB ── */
+  .inbox-wrap{display:flex;height:calc(100vh - 220px);min-height:400px;gap:0;border:1px solid rgba(0,180,216,.15);border-radius:14px;overflow:hidden}
+  .inbox-sidebar{width:280px;min-width:220px;flex-shrink:0;background:rgba(255,255,255,.03);border-right:1px solid rgba(0,180,216,.12);display:flex;flex-direction:column;overflow:hidden}
+  .inbox-sidebar-header{padding:12px 14px;border-bottom:1px solid rgba(0,180,216,.12);background:rgba(0,180,216,.06)}
+  .inbox-sidebar-title{font-family:'Bangers',cursive;font-size:18px;color:var(--cyan);letter-spacing:1px}
+  .inbox-sidebar-sub{font-size:11px;color:rgba(240,244,255,.4);margin-top:1px}
+  .inbox-thread-list{flex:1;overflow-y:auto}
+  .inbox-thread-item{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:.15s;display:flex;gap:10px;align-items:flex-start}
+  .inbox-thread-item:hover{background:rgba(0,180,216,.07)}
+  .inbox-thread-item.active{background:rgba(0,180,216,.13);border-left:3px solid var(--cyan)}
+  .inbox-thread-item.unread .inbox-thread-name{color:var(--white);font-weight:900}
+  .inbox-thread-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,.3),rgba(124,58,237,.2));border:2px solid rgba(0,180,216,.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--cyan);flex-shrink:0;text-transform:uppercase}
+  .inbox-thread-info{flex:1;min-width:0}
+  .inbox-thread-name{font-size:13px;font-weight:700;color:rgba(240,244,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .inbox-thread-preview{font-size:11px;color:rgba(240,244,255,.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .inbox-thread-time{font-size:10px;color:rgba(240,244,255,.3);flex-shrink:0;margin-top:2px}
+  .inbox-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:4px}
+  .inbox-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:rgba(10,22,40,.6)}
+  .inbox-main-header{padding:12px 16px;border-bottom:1px solid rgba(0,180,216,.12);background:rgba(0,180,216,.05);display:flex;align-items:center;gap:10px}
+  .inbox-main-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,rgba(0,180,216,.3),rgba(124,58,237,.2));border:2px solid rgba(0,180,216,.3);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--cyan);flex-shrink:0;text-transform:uppercase}
+  .inbox-main-name{font-family:'Bangers',cursive;font-size:18px;color:var(--white);letter-spacing:.5px}
+  .inbox-main-sub{font-size:11px;color:rgba(240,244,255,.4)}
+  .inbox-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .inbox-msg{max-width:70%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.55;position:relative}
+  .inbox-msg:hover .chat-del-btn{opacity:1}
+  .inbox-msg.from-user{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(240,244,255,.85);align-self:flex-start;border-radius:4px 14px 14px 14px}
+  .inbox-msg.from-owner{background:linear-gradient(135deg,rgba(0,180,216,.22),rgba(124,58,237,.15));border:1px solid rgba(0,180,216,.3);color:var(--white);align-self:flex-end;border-radius:14px 4px 14px 14px}
+  .inbox-msg-name{font-size:10px;font-weight:800;opacity:.6;text-transform:uppercase;margin-bottom:3px}
+  .inbox-msg-time{font-size:10px;opacity:.4;margin-top:4px}
+  .inbox-reply-row{padding:12px 14px;border-top:1px solid rgba(0,180,216,.12);display:flex;gap:8px;background:rgba(0,0,0,.2)}
+  .inbox-reply-input{flex:1;background:rgba(255,255,255,.07);border:2px solid rgba(0,180,216,.2);border-radius:10px;padding:8px 12px;color:var(--white);font-family:'Nunito',sans-serif;font-size:13px;outline:none;transition:.2s;resize:none;min-height:38px;max-height:90px}
+  .inbox-reply-input:focus{border-color:var(--cyan)}
+  .inbox-reply-input::placeholder{color:rgba(240,244,255,.3)}
+  .inbox-reply-btn{background:var(--cyan);border:none;color:var(--navy);border-radius:10px;padding:8px 16px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:.2s;white-space:nowrap;align-self:flex-end}
+  .inbox-reply-btn:hover{background:#00d4f5}
+  .inbox-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:rgba(240,244,255,.3);font-size:14px}
+  .inbox-empty-icon{font-size:48px;opacity:.4}
+  .inbox-unread-badge{background:var(--cyan);color:var(--navy);font-size:10px;font-weight:900;padding:1px 6px;border-radius:10px;margin-left:6px}
+  @media(max-width:600px){.inbox-wrap{flex-direction:column;height:auto}.inbox-sidebar{width:100%;max-height:200px}.inbox-main{min-height:350px}}
+
   /* PENDING APPROVALS */
   .pending-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;margin-left:6px;animation:pulse 1.5s infinite}
   .pending-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:rgba(255,214,10,.05);border:1px solid rgba(255,214,10,.2);border-radius:12px;margin-bottom:8px}
@@ -698,6 +738,7 @@
       <button class="tab tab-games" onclick="switchDashTab('games-tab',this)">🎮 Games</button>
       <button class="tab tab-schedule" onclick="switchDashTab('schedule-tab',this)">🔒 Class Times</button>
       <button class="tab tab-users" onclick="switchDashTab('users-tab',this)">👥 Users</button>
+      <button class="tab" id="tab-inbox-btn" onclick="switchDashTab('inbox-tab',this);renderInboxTab()" style="background:linear-gradient(135deg,rgba(0,180,216,.18),rgba(124,58,237,.12));border-color:rgba(0,180,216,.4);color:var(--cyan)">💬 Inbox <span class="inbox-unread-badge" id="inbox-unread-count" style="display:none">0</span></button>
       <button class="tab" id="tab-pending-btn" onclick="switchDashTab('pending-tab',this)" style="background:linear-gradient(135deg,rgba(230,57,70,.18),rgba(255,214,10,.1));border-color:rgba(230,57,70,.4);color:#ff8a8a">⏳ Pending <span class="pending-badge" id="pending-count" style="display:none">0</span></button>
       <button class="tab" id="tab-activity-btn" onclick="switchDashTab('activity-tab',this)" style="display:none;background:linear-gradient(135deg,rgba(255,214,10,.15),rgba(247,127,0,.1));border-color:rgba(255,214,10,.4);color:var(--yellow)">⭐ Activity Log</button>
       <button class="tab" id="tab-feedback-btn" onclick="switchDashTab('feedback-tab',this)" style="display:none;background:linear-gradient(135deg,rgba(0,180,216,.1),rgba(124,58,237,.1));border-color:rgba(0,180,216,.3);color:var(--cyan)">💬 Feedback</button>
@@ -880,6 +921,44 @@
       </div>
 
       <div id="dash-users-list"></div>
+    </div>
+
+    <!-- INBOX TAB -->
+    <div class="dash-tab-content" id="inbox-tab">
+      <div class="inbox-wrap">
+        <!-- Left sidebar: conversation list -->
+        <div class="inbox-sidebar">
+          <div class="inbox-sidebar-header">
+            <div class="inbox-sidebar-title">💬 Conversations</div>
+            <div class="inbox-sidebar-sub" id="inbox-active-count">0 active chats</div>
+          </div>
+          <div class="inbox-thread-list" id="inbox-thread-list">
+            <div style="padding:24px;text-align:center;color:rgba(240,244,255,.3);font-size:13px">Loading chats…</div>
+          </div>
+        </div>
+        <!-- Right panel: messages -->
+        <div class="inbox-main" id="inbox-main">
+          <div class="inbox-empty-state" id="inbox-placeholder">
+            <div class="inbox-empty-icon">💬</div>
+            <div>Select a conversation to reply</div>
+          </div>
+          <div id="inbox-chat-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+            <div class="inbox-main-header">
+              <div class="inbox-main-avatar" id="inbox-chat-avatar">?</div>
+              <div>
+                <div class="inbox-main-name" id="inbox-chat-name">—</div>
+                <div class="inbox-main-sub" id="inbox-chat-sub">—</div>
+              </div>
+            </div>
+            <div class="inbox-messages" id="inbox-messages"></div>
+            <div class="inbox-reply-row">
+              <textarea class="inbox-reply-input" id="inbox-reply-input" placeholder="Type your reply…" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendInboxReply()}"></textarea>
+              <button class="inbox-reply-btn" onclick="sendInboxReply()">Send ➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PENDING APPROVALS TAB -->
@@ -1439,9 +1518,9 @@ function updateNav(){
   // Save File button only visible to owners
   const sfb = document.getElementById('save-file-btn');
   if (sfb) sfb.style.display = (u && u.isOwner) ? 'block' : 'none';
-  // Chat FAB always visible (guests can message owner too)
+  // Chat FAB hidden for owners (they use the Inbox tab instead)
   const chatFab = document.getElementById('chat-fab');
-  if (chatFab) chatFab.style.display = 'flex';
+  if (chatFab) chatFab.style.display = (u && u.isOwner) ? 'none' : 'flex';
   // Update profile button initials/avatar
   updateProfileBtn();
   updateHomePage();
@@ -1516,6 +1595,7 @@ function doSignin(){
   updateNav();
   chatThreads = {};
   startChatSync();
+  if (found.isOwner) renderInboxTab();
   al.innerHTML = okBox('Welcome back, ' + found.username + '!');
   setTimeout(() => {
     ['si-user','si-pass'].forEach(i => document.getElementById(i).value = '');
@@ -1703,6 +1783,8 @@ function renderDash(){
   renderUsersTab();
   renderUserStatsDashboard();
   renderAnnouncementsList();
+  // Refresh inbox unread count badge
+  _updateInboxUnreadBadge();
   const themeSel = document.getElementById('site-theme-select');
   if (themeSel) themeSel.value = state.siteTheme || 'default';
 }
@@ -2421,7 +2503,176 @@ function tickLockdown(){
 
 setInterval(tickLockdown, 1000);
 
-// ── CHAT ───────────────────────────────────────────────────────
+// ── INBOX (owner dashboard chat panel) ────────────────────────
+let inboxActiveThread = null;
+let inboxThreadsCache = {};
+let inboxUnsubscribe  = null;
+
+function renderInboxTab(){
+  const me = state.currentUser;
+  if (!me?.isOwner) return;
+
+  // Subscribe to ALL chatThreads (owner view)
+  if (inboxUnsubscribe) inboxUnsubscribe();
+  inboxUnsubscribe = onValue(ref(db, 'chatThreads'), snap => {
+    inboxThreadsCache = {};
+    snap.forEach(threadSnap => {
+      const msgs = [];
+      threadSnap.forEach(msgSnap => {
+        msgs.push({ _fbKey: msgSnap.key, ...msgSnap.val() });
+      });
+      if (msgs.length) inboxThreadsCache[threadSnap.key] = msgs;
+    });
+    _renderInboxSidebar();
+    if (inboxActiveThread && inboxThreadsCache[inboxActiveThread]) {
+      _renderInboxMessages(inboxActiveThread);
+    }
+    _updateInboxUnreadBadge();
+  });
+}
+
+function _lastMsg(msgs){ return [...msgs].sort((a,b)=>(b.time||0)-(a.time||0))[0]; }
+function _hasUnread(msgs){ return msgs.some(m => m.from !== 'owner' && !m._read); }
+
+function _renderInboxSidebar(){
+  const list = document.getElementById('inbox-thread-list');
+  const countEl = document.getElementById('inbox-active-count');
+  if (!list) return;
+
+  const keys = Object.keys(inboxThreadsCache);
+  // Sort by latest message time descending
+  keys.sort((a,b) => {
+    const la = _lastMsg(inboxThreadsCache[a])?.time || 0;
+    const lb = _lastMsg(inboxThreadsCache[b])?.time || 0;
+    return lb - la;
+  });
+
+  if (countEl) countEl.textContent = keys.length + ' active chat' + (keys.length !== 1 ? 's' : '');
+
+  if (!keys.length){
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:rgba(240,244,255,.3);font-size:13px">No conversations yet 💬</div>`;
+    return;
+  }
+
+  list.innerHTML = keys.map(key => {
+    const msgs   = inboxThreadsCache[key];
+    const last   = _lastMsg(msgs);
+    const unread = _hasUnread(msgs);
+    const initials = key.slice(0,2).toUpperCase();
+    const timeStr  = last?.time ? _fmtTime(last.time) : '';
+    const preview  = last ? esc(last.text || '').slice(0, 50) : '';
+    const isActive = key === inboxActiveThread;
+    return `<div class="inbox-thread-item${isActive?' active':''}${unread?' unread':''}" onclick="openInboxThread('${esc(key)}')">
+      <div class="inbox-thread-avatar">${initials}</div>
+      <div class="inbox-thread-info">
+        <div class="inbox-thread-name">${esc(key)}${unread ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-left:6px;vertical-align:middle"></span>' : ''}</div>
+        <div class="inbox-thread-preview">${preview}</div>
+      </div>
+      <div class="inbox-thread-time">${timeStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function openInboxThread(key){
+  inboxActiveThread = key;
+  // Show the chat panel
+  document.getElementById('inbox-placeholder').style.display  = 'none';
+  const panel = document.getElementById('inbox-chat-panel');
+  panel.style.display = 'flex';
+  // Header
+  document.getElementById('inbox-chat-avatar').textContent = key.slice(0,2).toUpperCase();
+  document.getElementById('inbox-chat-name').textContent   = key;
+  document.getElementById('inbox-chat-sub').textContent    = 'Private conversation';
+  // Re-render sidebar to show active state
+  _renderInboxSidebar();
+  // Render messages
+  _renderInboxMessages(key);
+  // Mark messages as read in Firebase
+  _markThreadRead(key);
+  // Focus reply box
+  document.getElementById('inbox-reply-input')?.focus();
+}
+
+function _renderInboxMessages(key){
+  const el = document.getElementById('inbox-messages');
+  if (!el) return;
+  const msgs = inboxThreadsCache[key] || [];
+  const sorted = [...msgs].sort((a,b)=>(a.time||0)-(b.time||0));
+  const me = state.currentUser;
+
+  el.innerHTML = sorted.map(m => {
+    const fromOwner = m.from === 'owner';
+    const cls = fromOwner ? 'from-owner' : 'from-user';
+    const canDel = me?.isOwner && m._fbKey;
+    const delBtn = canDel
+      ? `<button class="chat-del-btn" onclick="deleteInboxMsg('${esc(key)}','${esc(m._fbKey)}')" title="Delete">✕</button>`
+      : '';
+    return `<div class="inbox-msg ${cls}">
+      ${delBtn}
+      <div class="inbox-msg-name">${esc(m.name || (fromOwner ? 'Owner' : key))}</div>
+      ${esc(m.text)}
+      <div class="inbox-msg-time">${m.time ? _fmtTime(m.time) : ''}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendInboxReply(){
+  const input = document.getElementById('inbox-reply-input');
+  const text  = (input?.value || '').trim();
+  if (!text || !inboxActiveThread) return;
+  const me   = state.currentUser;
+  const name = me ? '👑 ' + me.username : '👑 Owner';
+  const msg  = { from:'owner', name, text, time: Date.now() };
+  input.value = '';
+  push(ref(db, 'chatThreads/' + inboxActiveThread), msg).catch(() => {
+    // fallback: render locally
+    if (!inboxThreadsCache[inboxActiveThread]) inboxThreadsCache[inboxActiveThread] = [];
+    inboxThreadsCache[inboxActiveThread].push({ _fbKey: '_local_' + Date.now(), ...msg });
+    _renderInboxMessages(inboxActiveThread);
+  });
+}
+
+function deleteInboxMsg(threadKey, fbKey){
+  if (!fbKey) return;
+  remove(ref(db, 'chatThreads/' + threadKey + '/' + fbKey)).catch(() => {
+    if (inboxThreadsCache[threadKey]){
+      inboxThreadsCache[threadKey] = inboxThreadsCache[threadKey].filter(m => m._fbKey !== fbKey);
+      _renderInboxMessages(threadKey);
+    }
+  });
+}
+
+function _markThreadRead(key){
+  const msgs = inboxThreadsCache[key] || [];
+  msgs.forEach(m => {
+    if (m.from !== 'owner' && !m._read && m._fbKey){
+      update(ref(db, 'chatThreads/' + key + '/' + m._fbKey), { _read: true }).catch(()=>{});
+    }
+  });
+}
+
+function _updateInboxUnreadBadge(){
+  const badge = document.getElementById('inbox-unread-count');
+  if (!badge) return;
+  let total = 0;
+  Object.values(inboxThreadsCache).forEach(msgs => {
+    if (_hasUnread(msgs)) total++;
+  });
+  badge.style.display = total > 0 ? 'inline' : 'none';
+  badge.textContent   = total;
+}
+
+function _fmtTime(ts){
+  if (!ts) return '';
+  const d   = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ', ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
+
 let chatRating = 0;
 let chatMessages = [
   {from:'owner', name:'👑 Owner', text:'Hey! Feel free to ask us anything or leave feedback 😊', time: Date.now()}
@@ -2885,6 +3136,7 @@ Object.assign(window, {
   renderGames, playGame, closeGameModal,
   checkRiddle,
   toggleChat, switchChatTab, sendChatMsg, deleteChatMsg, setRating, submitFeedback,
+  renderInboxTab, openInboxThread, sendInboxReply, deleteInboxMsg,
   toggleBanWrap, cancelBan, confirmBan, unbanUser,
   setOwner, deleteUser, toggleResetPw,
   createUser, renderUsersTab,
