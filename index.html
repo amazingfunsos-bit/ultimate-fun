@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Fun</title>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>var __SAVED_DATA__ = null;</script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -260,7 +261,21 @@
   .owner-thread-row{display:none;padding:8px 12px;border-bottom:1px solid rgba(0,180,216,.12);background:rgba(0,0,0,.15);gap:8px;align-items:center}
   .owner-thread-row select{flex:1;background:rgba(255,255,255,.07);border:2px solid rgba(0,180,216,.2);border-radius:8px;padding:6px 8px;color:var(--white);font-family:'Nunito',sans-serif;font-size:12px;outline:none}
 
-  /* PROFILE BUTTON */
+  /* PENDING APPROVALS */
+  .pending-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;margin-left:6px;animation:pulse 1.5s infinite}
+  .pending-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:rgba(255,214,10,.05);border:1px solid rgba(255,214,10,.2);border-radius:12px;margin-bottom:8px}
+  .pending-type{font-size:18px;flex-shrink:0}
+  .pending-info{flex:1;min-width:0}
+  .pending-label{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--yellow);opacity:.7;letter-spacing:.5px}
+  .pending-content{font-size:13px;color:var(--white);margin-top:2px;line-height:1.5;word-break:break-word}
+  .pending-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .btn-approve{background:rgba(39,174,96,.2);border:1px solid rgba(39,174,96,.4);color:#2ecc71;border-radius:8px;padding:5px 12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:.2s}
+  .btn-approve:hover{background:rgba(39,174,96,.35)}
+  .btn-reject{background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);color:var(--red);border-radius:8px;padding:5px 12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:.2s}
+  .btn-reject:hover{background:rgba(230,57,70,.3)}
+  .approval-sent-msg{background:rgba(0,180,216,.08);border:1px solid rgba(0,180,216,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--cyan);margin-top:8px;text-align:center}
+
+
   .profile-btn{background:linear-gradient(135deg,rgba(255,214,10,.2),rgba(247,127,0,.12));border:2px solid rgba(255,214,10,.35);color:var(--yellow);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;cursor:pointer;transition:.2s;flex-shrink:0;text-transform:uppercase}
   .profile-btn:hover{background:rgba(255,214,10,.3);border-color:var(--yellow)}
 
@@ -683,6 +698,7 @@
       <button class="tab tab-games" onclick="switchDashTab('games-tab',this)">🎮 Games</button>
       <button class="tab tab-schedule" onclick="switchDashTab('schedule-tab',this)">🔒 Class Times</button>
       <button class="tab tab-users" onclick="switchDashTab('users-tab',this)">👥 Users</button>
+      <button class="tab" id="tab-pending-btn" onclick="switchDashTab('pending-tab',this)" style="background:linear-gradient(135deg,rgba(230,57,70,.18),rgba(255,214,10,.1));border-color:rgba(230,57,70,.4);color:#ff8a8a">⏳ Pending <span class="pending-badge" id="pending-count" style="display:none">0</span></button>
       <button class="tab" id="tab-activity-btn" onclick="switchDashTab('activity-tab',this)" style="display:none;background:linear-gradient(135deg,rgba(255,214,10,.15),rgba(247,127,0,.1));border-color:rgba(255,214,10,.4);color:var(--yellow)">⭐ Activity Log</button>
       <button class="tab" id="tab-feedback-btn" onclick="switchDashTab('feedback-tab',this)" style="display:none;background:linear-gradient(135deg,rgba(0,180,216,.1),rgba(124,58,237,.1));border-color:rgba(0,180,216,.3);color:var(--cyan)">💬 Feedback</button>
       <button class="tab" id="tab-announcements-btn" onclick="switchDashTab('announcements-tab',this)" style="display:none;background:linear-gradient(135deg,rgba(255,214,10,.18),rgba(0,180,216,.1));border-color:rgba(255,214,10,.4);color:var(--yellow)">📢 Announcements</button>
@@ -864,6 +880,17 @@
       </div>
 
       <div id="dash-users-list"></div>
+    </div>
+
+    <!-- PENDING APPROVALS TAB -->
+    <div class="dash-tab-content" id="pending-tab">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <h3 style="font-family:'Bangers',cursive;font-size:22px;color:#ff8a8a;letter-spacing:1px">⏳ Pending Approvals</h3>
+      </div>
+      <p style="font-size:12px;color:rgba(240,244,255,.45);margin-bottom:16px;line-height:1.6">
+        Items waiting for review. When you add something, your email app opens with a pre-written message to <strong style="color:var(--cyan)">rabbi@chabadguatemala.com</strong> — send it, then reply <strong style="color:#2ecc71">YES</strong> (or click the approve link in the email) to publish, or reply <strong style="color:var(--red)">NO</strong> to reject. You can also approve/reject directly below.
+      </p>
+      <div id="pending-list"><div class="empty-state"><span class="big-icon">✅</span>No pending items — all caught up!</div></div>
     </div>
 
     <!-- ACTIVITY LOG TAB (Head Admin only) -->
@@ -1101,6 +1128,190 @@ function saveState(){
 // saveToFile now just triggers a Firebase save (file download no longer needed)
 function saveToFile(){ saveToFirebase(); }
 
+// ── APPROVAL SYSTEM ───────────────────────────────────────────
+const EMAILJS_SERVICE_ID  = 'service_xzquxm8';
+const EMAILJS_TEMPLATE_ID = 'template_ulezzgn';
+const EMAILJS_PUBLIC_KEY  = 'iI4Qo7umIXMFoW-Xt';
+const APPROVAL_EMAIL      = 'rabbi@chabadguatemala.com';
+
+// Initialize EmailJS
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+// Type metadata for display
+const ITEM_TYPE_META = {
+  jokes:      { icon:'😂', label:'Joke' },
+  riddles:    { icon:'🧠', label:'Riddle' },
+  facts:      { icon:'💡', label:'Fact' },
+  challenges: { icon:'🔥', label:'Challenge' },
+  media:      { icon:'🖼️', label:'Meme/GIF' },
+  games:      { icon:'🎮', label:'Game' },
+};
+
+// Generate a random token for approval links
+function genToken(){
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// Build a readable summary of the item for the email
+function buildItemSummary(type, item){
+  if (type === 'jokes')      return `Setup: "${item.setup}"\nPunchline: "${item.punch}"`;
+  if (type === 'riddles')    return `Question: "${item.q}"\nAnswer: "${item.a}"`;
+  if (type === 'facts')      return `Fact: "${item.txt}"`;
+  if (type === 'challenges') return `Title: "${item.title}"\nDifficulty: ${item.difficulty}\nDescription: "${item.desc}"`;
+  if (type === 'media')      return `Caption: "${item.caption}"\nType: ${item.type}`;
+  if (type === 'games')      return `Name: "${item.name}"\nDescription: "${item.desc || ''}"`;
+  return JSON.stringify(item);
+}
+
+// Submit an item for approval — saves to Firebase pending + sends email via EmailJS
+async function submitForApproval(type, item){
+  const token = genToken();
+  const meta  = ITEM_TYPE_META[type] || { icon:'📄', label: type };
+  const adder = state.currentUser?.username || 'Owner';
+  const siteUrl = window.location.href.split('?')[0];
+  const approveUrl = `${siteUrl}?approve=${token}`;
+  const rejectUrl  = `${siteUrl}?reject=${token}`;
+  const summary    = buildItemSummary(type, item);
+
+  // Save to Firebase pending node — item is NOT live yet
+  const pending = { type, item, token, adder, time: Date.now(), status: 'pending' };
+  await set(ref(db, 'pending/' + token), pending).catch(e => console.warn('pending write:', e));
+  refreshPendingCount();
+
+  // Send email via EmailJS
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:     APPROVAL_EMAIL,
+      item_type:    meta.label,
+      item_icon:    meta.icon,
+      item_summary: summary,
+      added_by:     adder,
+      approve_url:  approveUrl,
+      reject_url:   rejectUrl,
+      token:        token,
+    });
+    toast(`📧 Approval email sent to ${APPROVAL_EMAIL}! It will go live once approved.`, 'info');
+  } catch(e){
+    console.warn('EmailJS error:', e);
+    toast(`⏳ Email failed — approve manually in the ⏳ Pending tab.`, 'error');
+  }
+
+  return token;
+}
+
+// Approve a pending item by token — moves it to live state
+async function approvePending(token){
+  try {
+    const snap = await get(ref(db, 'pending/' + token));
+    const p = snap.val();
+    if (!p){ toast('Pending item not found.', 'error'); return; }
+    if (p.status !== 'pending'){ toast('Already processed.', 'info'); return; }
+
+    // Add to live state
+    const { type, item } = p;
+    if (!state[type]) state[type] = [];
+    state[type].push(item);
+    saveState();
+
+    // Mark as approved in Firebase
+    await update(ref(db, 'pending/' + token), { status: 'approved' });
+
+    renderDash();
+    refreshPendingCount();
+    toast(`✅ ${ITEM_TYPE_META[type]?.label || 'Item'} approved and published! 🎉`, 'success');
+    logActivity('Approved pending item', `${type}: ${buildItemSummary(type, item).slice(0,60)}`);
+  } catch(e){
+    toast('Approval failed: ' + e.message, 'error');
+  }
+}
+
+// Reject a pending item by token
+async function rejectPending(token){
+  try {
+    await update(ref(db, 'pending/' + token), { status: 'rejected' });
+    refreshPendingCount();
+    renderPendingTab();
+    toast('❌ Item rejected and removed.', 'error');
+  } catch(e){
+    toast('Rejection failed: ' + e.message, 'error');
+  }
+}
+
+// Count + badge update
+async function refreshPendingCount(){
+  try {
+    const snap = await get(ref(db, 'pending'));
+    const data = snap.val() || {};
+    const count = Object.values(data).filter(p => p.status === 'pending').length;
+    const badge = document.getElementById('pending-count');
+    if (badge){
+      badge.style.display = count > 0 ? 'inline-flex' : 'none';
+      badge.textContent   = count;
+    }
+  } catch(e){}
+}
+
+// Render pending tab list
+async function renderPendingTab(){
+  const el = document.getElementById('pending-list');
+  if (!el) return;
+  try {
+    const snap = await get(ref(db, 'pending'));
+    const data = snap.val() || {};
+    const items = Object.values(data)
+      .filter(p => p.status === 'pending')
+      .sort((a,b) => b.time - a.time);
+
+    if (!items.length){
+      el.innerHTML = `<div class="empty-state"><span class="big-icon">✅</span>No pending items — all caught up!</div>`;
+      return;
+    }
+
+    el.innerHTML = items.map(p => {
+      const meta = ITEM_TYPE_META[p.type] || { icon:'📄', label: p.type };
+      const ago  = Math.round((Date.now() - p.time) / 60000);
+      const agoStr = ago < 1 ? 'just now' : ago < 60 ? `${ago}m ago` : `${Math.floor(ago/60)}h ago`;
+      return `<div class="pending-row">
+        <div class="pending-type">${meta.icon}</div>
+        <div class="pending-info">
+          <div class="pending-label">${meta.label} · added by ${esc(p.adder)} · ${agoStr}</div>
+          <div class="pending-content">${esc(buildItemSummary(p.type, p.item)).replace(/\n/g,'<br>')}</div>
+          <div class="pending-actions">
+            <button class="btn-approve" onclick="approvePending('${p.token}');this.closest('.pending-row').style.opacity='.4'">✅ Approve & Publish</button>
+            <button class="btn-reject"  onclick="rejectPending('${p.token}');this.closest('.pending-row').remove()">❌ Reject</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    el.innerHTML = `<div class="empty-state"><span class="big-icon">⚠️</span>Could not load pending items.</div>`;
+  }
+}
+
+// Check URL for ?approve= or ?reject= on page load
+async function checkApprovalUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const approveToken = params.get('approve');
+  const rejectToken  = params.get('reject');
+  if (approveToken){
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+    // Must be owner to approve via link
+    if (!state.currentUser?.isOwner){
+      toast('⚠️ Sign in as an owner to approve items.', 'error');
+      return;
+    }
+    await approvePending(approveToken);
+  } else if (rejectToken){
+    window.history.replaceState({}, '', window.location.pathname);
+    if (!state.currentUser?.isOwner){
+      toast('⚠️ Sign in as an owner to reject items.', 'error');
+      return;
+    }
+    await rejectPending(rejectToken);
+  }
+}
+
 // ── REAL-TIME LISTENER ────────────────────────────────────────
 function startRealtimeSync(){
   onValue(ref(db, 'data'), snap => {
@@ -1193,6 +1404,8 @@ async function loadState(){
   if (tzSel) tzSel.addEventListener('change', updateTzCurrentTime);
   tickLockdown();
   updateNav();
+  refreshPendingCount();
+  checkApprovalUrl();
 }
 
 // ── ROUTING ────────────────────────────────────────────────────
@@ -1348,6 +1561,7 @@ function switchDashTab(tabId, btn){
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   btn.classList.add('active');
+  if (tabId === 'pending-tab') renderPendingTab();
 }
 
 // ── ADD CONTENT ────────────────────────────────────────────────
@@ -1355,29 +1569,29 @@ function addJoke(){
   const setup = document.getElementById('joke-setup').value.trim();
   const punch = document.getElementById('joke-punch').value.trim();
   if (!setup || !punch){ toast('Fill in both fields!','error'); return; }
-  state.jokes.push({setup, punch, id: Date.now()});
+  const item = {setup, punch, id: Date.now()};
   document.getElementById('joke-setup').value = '';
   document.getElementById('joke-punch').value = '';
-  saveState(); renderDash(); toast('Joke added! 😂');
-  logActivity('Added a joke', setup.slice(0,60));
+  submitForApproval('jokes', item);
+  logActivity('Submitted joke for approval', setup.slice(0,60));
 }
 function addRiddle(){
   const q = document.getElementById('riddle-q').value.trim();
   const a = document.getElementById('riddle-a').value.trim();
   if (!q || !a){ toast('Fill in both fields!','error'); return; }
-  state.riddles.push({q, a, id: Math.floor(Date.now() + Math.random()*1000)});
+  const item = {q, a, id: Math.floor(Date.now() + Math.random()*1000)};
   document.getElementById('riddle-q').value = '';
   document.getElementById('riddle-a').value = '';
-  saveState(); renderDash(); toast('Riddle added! 🧠');
-  logActivity('Added a riddle', q.slice(0,60));
+  submitForApproval('riddles', item);
+  logActivity('Submitted riddle for approval', q.slice(0,60));
 }
 function addFact(){
   const txt = document.getElementById('fact-txt').value.trim();
   if (!txt){ toast('Enter a fact!','error'); return; }
-  state.facts.push({txt, id: Date.now()});
+  const item = {txt, id: Date.now()};
   document.getElementById('fact-txt').value = '';
-  saveState(); renderDash(); toast('Fact added! 💡');
-  logActivity('Added a fact', txt.slice(0,60));
+  submitForApproval('facts', item);
+  logActivity('Submitted fact for approval', txt.slice(0,60));
 }
 function addChallenge(){
   const title = document.getElementById('ch-title').value.trim();
@@ -1385,26 +1599,26 @@ function addChallenge(){
   const difficulty = document.getElementById('ch-diff').value;
   const icon  = document.getElementById('ch-icon').value.trim() || '🔥';
   if (!title || !desc){ toast('Fill in title and description!','error'); return; }
-  state.challenges.push({title, desc, difficulty, icon, id: Date.now()});
+  const item = {title, desc, difficulty, icon, id: Date.now()};
   document.getElementById('ch-title').value = '';
   document.getElementById('ch-desc').value  = '';
   document.getElementById('ch-icon').value  = '';
-  saveState(); renderDash(); toast('Challenge added! 🔥');
-  logActivity('Added a challenge', title);
+  submitForApproval('challenges', item);
+  logActivity('Submitted challenge for approval', title);
 }
 function addMedia(){
   const url     = pendingMediaUpload;
   const caption = document.getElementById('media-caption').value.trim();
   const type    = document.getElementById('media-type').value;
   if (!url || !caption){ toast('Upload a file and add a caption!','error'); return; }
-  state.media.push({url, caption, type, id: Date.now()});
+  const item = {url, caption, type, id: Date.now()};
   pendingMediaUpload = '';
   const mf = document.getElementById('media-file');
   if (mf) mf.value = '';
   const note = document.getElementById('media-file-note');
   if (note) note.textContent = 'No file selected yet.';
   document.getElementById('media-caption').value = '';
-  saveState(); renderDash(); toast('Media added! 🖼️');
+  submitForApproval('media', item);
 }
 function handleMediaUpload(event){
   const file = event.target.files[0];
@@ -1434,12 +1648,13 @@ function addGame(){
   const icon = document.getElementById('game-icon').value.trim() || '🎮';
   const code = document.getElementById('game-code').value.trim();
   if (!name || !code){ toast('Enter game name and code!','error'); return; }
-  state.games.push({name, desc, icon, code, id: Date.now()});
+  const item = {name, desc, icon, code, id: Date.now()};
   document.getElementById('game-name').value = '';
   document.getElementById('game-desc').value = '';
   document.getElementById('game-icon').value = '';
   document.getElementById('game-code').value = '';
-  saveState(); renderDash(); toast('Game published! 🎮','info');
+  submitForApproval('games', item);
+  logActivity('Submitted game for approval', name);
 }
 function deleteItem(type, id){
   state[type] = state[type].filter(i => i.id !== id);
@@ -1703,12 +1918,12 @@ function bulkAddJokes(){
   let added = 0;
   lines.forEach(line => {
     const [setup, punch] = line.split('|').map(s=>s.trim());
-    if (setup && punch){ state.jokes.push({setup, punch, id: Date.now() + Math.random()}); added++; }
+    if (setup && punch){ submitForApproval('jokes', {setup, punch, id: Date.now() + Math.random()}); added++; }
   });
   if (!added){ toast('No valid jokes found. Use: Setup | Punchline','error'); return; }
   document.getElementById('bulk-jokes-txt').value = '';
   document.getElementById('bulk-jokes').style.display = 'none';
-  saveState(); renderDash(); toast(`${added} joke${added>1?'s':''} added! 😂`);
+  toast(`${added} joke${added>1?'s':''} submitted for approval! 😂`,'info');
 }
 
 function bulkAddRiddles(){
@@ -1716,21 +1931,21 @@ function bulkAddRiddles(){
   let added = 0;
   lines.forEach(line => {
     const [q, a] = line.split('|').map(s=>s.trim());
-    if (q && a){ state.riddles.push({q, a, id: Math.floor(Date.now() + Math.random()*1000)}); added++; }
+    if (q && a){ submitForApproval('riddles', {q, a, id: Math.floor(Date.now() + Math.random()*1000)}); added++; }
   });
   if (!added){ toast('No valid riddles found. Use: Question | Answer','error'); return; }
   document.getElementById('bulk-riddles-txt').value = '';
   document.getElementById('bulk-riddles').style.display = 'none';
-  saveState(); renderDash(); toast(`${added} riddle${added>1?'s':''} added! 🧠`);
+  toast(`${added} riddle${added>1?'s':''} submitted for approval! 🧠`,'info');
 }
 
 function bulkAddFacts(){
   const lines = (document.getElementById('bulk-facts-txt').value || '').split('\n').map(l=>l.trim()).filter(Boolean);
   if (!lines.length){ toast('No facts found.','error'); return; }
-  lines.forEach(txt => state.facts.push({txt, id: Date.now() + Math.random()}));
+  lines.forEach(txt => submitForApproval('facts', {txt, id: Date.now() + Math.random()}));
   document.getElementById('bulk-facts-txt').value = '';
   document.getElementById('bulk-facts').style.display = 'none';
-  saveState(); renderDash(); toast(`${lines.length} fact${lines.length>1?'s':''} added! 💡`);
+  toast(`${lines.length} fact${lines.length>1?'s':''} submitted for approval! 💡`,'info');
 }
 
 // ── BAN / UNBAN ───────────────────────────────────────────────
@@ -2663,6 +2878,7 @@ Object.assign(window, {
   handleMediaUpload, switchOwnerThread,
   deleteItem, deleteSchedule, addSchedule,
   bulkAddJokes, bulkAddRiddles, bulkAddFacts, toggleBulk,
+  approvePending, rejectPending, renderPendingTab,
   renderPublic, renderChallenges, filterChallenges,
   openChallengeModal, closeChallengeModal, acceptChallenge,
   renderMedia, filterMedia, openLightbox, closeLightbox,
