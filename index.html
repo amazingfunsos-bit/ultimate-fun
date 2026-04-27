@@ -244,6 +244,10 @@
   .chat-msg.from-owner{background:rgba(0,180,216,.12);border:1px solid rgba(0,180,216,.2);color:var(--cyan);align-self:flex-start}
   .chat-msg.from-me{background:rgba(247,127,0,.12);border:1px solid rgba(247,127,0,.2);color:#ffb347;align-self:flex-end}
   .chat-msg-name{font-size:10px;font-weight:800;margin-bottom:3px;opacity:.7;text-transform:uppercase}
+  .chat-msg{position:relative}
+  .chat-msg:hover .chat-del-btn{opacity:1}
+  .chat-del-btn{opacity:0;position:absolute;top:4px;right:4px;background:rgba(230,57,70,.7);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;transition:.15s;line-height:1;padding:0}
+  .chat-del-btn:hover{background:var(--red);opacity:1!important;transform:scale(1.15)}
   .chat-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(0,180,216,.15)}
   .chat-input{flex:1;background:rgba(255,255,255,.07);border:2px solid rgba(0,180,216,.2);border-radius:10px;padding:7px 10px;color:var(--white);font-family:'Nunito',sans-serif;font-size:12px;outline:none;transition:.2s}
   .chat-input:focus{border-color:var(--cyan)}
@@ -2258,14 +2262,20 @@ function renderChatMessages(){
   if (!el) return;
   const threadKey = getCurrentThreadKey();
   let rawMsgs = chatThreads?.[threadKey];
-  // Firebase push() stores as object with auto-keys — convert to array
-  const threadMsgs = rawMsgs
-    ? (Array.isArray(rawMsgs) ? rawMsgs : Object.values(rawMsgs)).sort((a,b)=>(a.time||0)-(b.time||0))
-    : [{from:'owner', name:'👑 Owner', text:'Hey! Feel free to ask us anything or leave feedback 😊', time:0}];
+  // Already an array with _fbKey from startChatSync — sort by time
+  const threadMsgs = (rawMsgs && rawMsgs.length)
+    ? [...rawMsgs].sort((a,b)=>(a.time||0)-(b.time||0))
+    : [{_fbKey:null, from:'owner', name:'👑 Owner', text:'Hey! Feel free to ask us anything or leave feedback 😊', time:0}];
   const me = state.currentUser;
   el.innerHTML = threadMsgs.map(m => {
     const isFromMe = me?.isOwner ? m.from === 'owner' : m.from !== 'owner';
+    // Show delete button if: owner (can delete anything) OR it's your own message
+    const canDelete = (me?.isOwner || isFromMe) && m._fbKey;
+    const delBtn = canDelete
+      ? `<button class="chat-del-btn" onclick="deleteChatMsg('${esc(threadKey)}','${esc(m._fbKey)}')" title="Delete message">✕</button>`
+      : '';
     return `<div class="chat-msg ${isFromMe ? 'from-me' : 'from-owner'}">
+      ${delBtn}
       <div class="chat-msg-name">${esc(m.name)}</div>
       ${esc(m.text)}
     </div>`;
@@ -2288,6 +2298,17 @@ function sendChatMsg(){
     if (!chatThreads[threadKey]) chatThreads[threadKey] = [];
     chatThreads[threadKey].push(msg);
     renderChatMessages();
+  });
+}
+
+function deleteChatMsg(threadKey, fbKey){
+  if (!fbKey) return;
+  remove(ref(db, 'chatThreads/' + threadKey + '/' + fbKey)).catch(() => {
+    // Fallback: remove from local cache
+    if (chatThreads[threadKey]){
+      chatThreads[threadKey] = chatThreads[threadKey].filter(m => m._fbKey !== fbKey);
+      renderChatMessages();
+    }
   });
 }
 
@@ -2595,10 +2616,17 @@ function exportMediaFiles(){
 function startChatSync(){
   const me = state.currentUser;
   if (me?.isOwner){
-    // Owners see ALL threads so they can reply to everyone
+    // Owners see ALL threads — store as {threadKey: [{_fbKey, from, name, text, time}, ...]}
     onValue(ref(db, 'chatThreads'), snap => {
-      const d = snap.val();
-      chatThreads = d || {};
+      chatThreads = {};
+      snap.forEach(threadSnap => {
+        const threadKey = threadSnap.key;
+        const msgs = [];
+        threadSnap.forEach(msgSnap => {
+          msgs.push({_fbKey: msgSnap.key, ...msgSnap.val()});
+        });
+        chatThreads[threadKey] = msgs;
+      });
       const modal = document.getElementById('chat-modal');
       if (modal && modal.classList.contains('open')){
         renderOwnerThreadPicker();
@@ -2609,13 +2637,14 @@ function startChatSync(){
     // Regular users / guests only subscribe to their OWN thread
     const key = me ? chatThreadKeyForUser(me.username) : 'guest';
     onValue(ref(db, 'chatThreads/' + key), snap => {
-      const msgs = snap.val();
-      // Convert Firebase object → array if needed
-      const arr = msgs ? (Array.isArray(msgs) ? msgs : Object.values(msgs)) : [];
-      if (!arr.length){
-        arr.push({from:'owner', name:'👑 Owner', text:'Hey! This is your private chat with the owner 😊', time:0});
+      const msgs = [];
+      snap.forEach(msgSnap => {
+        msgs.push({_fbKey: msgSnap.key, ...msgSnap.val()});
+      });
+      if (!msgs.length){
+        msgs.push({_fbKey: null, from:'owner', name:'👑 Owner', text:'Hey! This is your private chat with the owner 😊', time:0});
       }
-      chatThreads[key] = arr;
+      chatThreads[key] = msgs;
       const modal = document.getElementById('chat-modal');
       if (modal && modal.classList.contains('open')){
         renderChatMessages();
@@ -2639,7 +2668,7 @@ Object.assign(window, {
   renderMedia, filterMedia, openLightbox, closeLightbox,
   renderGames, playGame, closeGameModal,
   checkRiddle,
-  toggleChat, switchChatTab, sendChatMsg, setRating, submitFeedback,
+  toggleChat, switchChatTab, sendChatMsg, deleteChatMsg, setRating, submitFeedback,
   toggleBanWrap, cancelBan, confirmBan, unbanUser,
   setOwner, deleteUser, toggleResetPw,
   createUser, renderUsersTab,
