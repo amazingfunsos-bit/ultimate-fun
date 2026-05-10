@@ -1522,7 +1522,7 @@ async function loadState(){
   populateTzSelect();
   const tzSel = document.getElementById('sch-tz');
   if (tzSel) tzSel.addEventListener('change', updateTzCurrentTime);
-  tickLockdown();
+  startLockdownTicker(); // starts interval + first tick AFTER schedule is loaded from Firebase
   updateNav();
   refreshPendingCount();
   checkApprovalUrl();
@@ -2888,7 +2888,9 @@ function fmt12(hhmm){
 
 // Live clock & lockdown check — runs every second
 // Track previous block state to detect transitions
-let _prevBlockId = undefined; // undefined = first run
+// Use sessionStorage so we remember across the reload we trigger
+let _prevBlockId = sessionStorage.getItem('_blockId') ?? undefined;
+// undefined means first ever load (no sessionStorage value yet)
 
 function tickLockdown(){
   const now     = new Date();
@@ -2897,14 +2899,17 @@ function tickLockdown(){
   const isOwner = state.currentUser && state.currentUser.isOwner;
 
   // ── RELOAD ON CLASS START / END ──────────────────────────────
-  // _prevBlockId: null = no class, string = class id, undefined = first tick
   const curBlockId = block ? (block.label + '|' + block.start + '|' + block.end) : null;
-  if (_prevBlockId !== undefined && _prevBlockId !== curBlockId) {
-    // Class just started or just ended — reload so the site state is fresh
+  const storedId   = sessionStorage.getItem('_blockId'); // null if never set
+
+  if (storedId !== undefined && storedId !== curBlockId) {
+    // Block changed — store new state then reload once
+    sessionStorage.setItem('_blockId', curBlockId ?? '');
     window.location.reload();
     return;
   }
-  _prevBlockId = curBlockId;
+  // Keep sessionStorage in sync
+  sessionStorage.setItem('_blockId', curBlockId ?? '');
 
   // Clock on lockdown screen always shows USER's local time
   const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -2976,7 +2981,12 @@ function tickLockdown(){
   }
 }
 
-setInterval(tickLockdown, 1000);
+// ── LOCKDOWN TICKER — started only after loadState() completes ──
+// (see loadState() which calls startLockdownTicker())
+function startLockdownTicker(){
+  tickLockdown(); // immediate first tick with real schedule data
+  setInterval(tickLockdown, 1000);
+}
 
 // ── INBOX (owner dashboard chat panel) ────────────────────────
 let inboxActiveThread = null;
