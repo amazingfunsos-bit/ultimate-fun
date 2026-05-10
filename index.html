@@ -2887,29 +2887,24 @@ function fmt12(hhmm){
 }
 
 // Live clock & lockdown check — runs every second
-// Track previous block state to detect transitions
-// Use sessionStorage so we remember across the reload we trigger
-let _prevBlockId = sessionStorage.getItem('_blockId') ?? undefined;
-// undefined means first ever load (no sessionStorage value yet)
-
 function tickLockdown(){
   const now     = new Date();
   const block   = getCurrentBlock(now);
   const overlay = document.getElementById('lockdown-overlay');
   const isOwner = state.currentUser && state.currentUser.isOwner;
 
-  // ── RELOAD ON CLASS START / END ──────────────────────────────
-  const curBlockId = block ? (block.label + '|' + block.start + '|' + block.end) : null;
-  const storedId   = sessionStorage.getItem('_blockId'); // null if never set
+// ── RELOAD ON CLASS START / END ──────────────────────────────
+  const curBlockId = block ? (block.label + '|' + block.start + '|' + block.end) : '';
+  const storedId   = sessionStorage.getItem('_blockId'); // null = never set
 
-  if (storedId !== undefined && storedId !== curBlockId) {
-    // Block changed — store new state then reload once
-    sessionStorage.setItem('_blockId', curBlockId ?? '');
+  if (storedId !== null && storedId !== curBlockId) {
+    // Block genuinely changed — update storage then reload once
+    sessionStorage.setItem('_blockId', curBlockId);
     window.location.reload();
     return;
   }
-  // Keep sessionStorage in sync
-  sessionStorage.setItem('_blockId', curBlockId ?? '');
+  // First visit or same block — just keep storage current, no reload
+  sessionStorage.setItem('_blockId', curBlockId);
 
   // Clock on lockdown screen always shows USER's local time
   const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
